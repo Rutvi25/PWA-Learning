@@ -1,0 +1,8 @@
+self.addEventListener('install', function (event) {
+  console.log('[Service worker] installing service worker...', event);
+});
+self.addEventListener('activate', function (event) {
+  console.log('[Service worker] installing service worker...', event);
+  return self.clients.claim();      // it ensures that whether service workers are installed or activated correctly or not.
+});
+
