@@ -10,6 +10,17 @@ window.addEventListener('beforeinstallprompt', function (event) {
   deferredPrompt = event;
   return false;
 });
+//ajax
+var xhr = new XMLHttpRequest();
+xhr.open('GET', 'https://httpbin.org/ip');
+xhr.responseType = 'json';
+xhr.onload = function () {
+  console.log(xhr.response);
+};
+xhr.onerror = function () {
+  console.log('Error!');
+};
+xhr.send();
 // promises
 var promise = new Promise(function (resolve, reject) {
   setTimeout(function () {
@@ -34,20 +45,21 @@ fetch('https://httpbin.org/post', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    Accept: 'application/json',
   },
-  body: JSON.stringify({message: 'Does this work?'})
+  mode: 'no-cors',
+  body: JSON.stringify({ message: 'Does this work?' }),
 })
-.then(function (response) {
-  console.log(response);
-  return response.json();
-})
-.then(function (data) {
-  console.log(data);
-})
-.catch(function (err) {
-  console.log(err);
-});
+  .then(function (response) {
+    console.log(response);
+    return response.json();
+  })
+  .then(function (data) {
+    console.log(data);
+  })
+  .catch(function (err) {
+    console.log(err);
+  });
 
 // promise
 //   .then(function(text) {
