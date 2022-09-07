@@ -6,6 +6,5 @@ self.addEventListener('activate', function (event) {
   return self.clients.claim(); // it ensures that whether service workers are installed or activated correctly or not.
 });
 self.addEventListener('fetch', function (event) {
-  console.log('[Service worker] fetching something...', event);
   event.respondWith(fetch(event.request));
 });
