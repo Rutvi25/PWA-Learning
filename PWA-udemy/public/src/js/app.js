@@ -1,5 +1,5 @@
 var deferredPrompt;
-if(!window.Promise) {
+if (!window.Promise) {
   window.Promise = Promise;
 }
 if ('serviceWorker' in navigator) {
