@@ -2,7 +2,7 @@ self.addEventListener('install', function (event) {
   console.log('[Service worker] installing service worker...', event);
   // as soon as the service worker installation finishes, we've fetch listener
   event.waitUntil(
-    caches.open('static').then(function (cache) {
+    caches.open('static-v2').then(function (cache) {
       console.log('[Service Worker] Precaching app shell...');
       cache.addAll([
         '/',
@@ -14,7 +14,7 @@ self.addEventListener('install', function (event) {
         '/src/js/material.min.js',
         '/src/css/app.css',
         '/src/css/feed.css',
-        '/src/image/main-image.jpg',
+        '/src/images/main-image.jpg',
         'https://fonts.googleapis.com/css?family=Roboto:400,700',
         'https://fonts.googleapis.com/icon?family=Material+Icons',
         'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css',
@@ -38,9 +38,9 @@ self.addEventListener('fetch', function (event) {
             return res;
           });
         });
-        .catch(function(err) {
+        // .catch(function(err) {
           
-        })
+        // })
       }
     })
   );
