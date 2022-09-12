@@ -2,7 +2,7 @@ self.addEventListener('install', function (event) {
   console.log('[Service worker] installing service worker...', event);
   // as soon as the service worker installation finishes, we've fetch listener
   event.waitUntil(
-    caches.open('static-v2').then(function (cache) {
+    caches.open('static-v3').then(function (cache) {
       console.log('[Service Worker] Precaching app shell...');
       cache.addAll([
         '/',
@@ -24,9 +24,22 @@ self.addEventListener('install', function (event) {
 });
 self.addEventListener('activate', function (event) {
   console.log('[Service worker] activating service worker...', event);
+  event.waitUntil(
+    caches.keys().then(function (keyList) {
+      return Promise.all(
+        keyList.map(function (key) {
+          if (key !== 'static-v3' && key !== 'dynamic') {
+            console.log('S[ervice worker] removing old cache...', key);
+            return caches.delete(key);
+          }
+        })
+      );
+    })
+  ); // it'll wait until the clean up will be done, so that the fetch won't serve results from old cache
   return self.clients.claim(); // it ensures that whether service workers are installed or activated correctly or not.
 });
 self.addEventListener('fetch', function (event) {
+  if (!(event.request.url.indexOf('http') === 0)) return;
   event.respondWith(
     caches.match(event.request).then(function (response) {
       if (response) {
@@ -39,7 +52,7 @@ self.addEventListener('fetch', function (event) {
           });
         });
         // .catch(function(err) {
-          
+
         // })
       }
     })
