@@ -42,26 +42,34 @@ self.addEventListener('activate', function (event) {
   ); // it'll wait until the clean up will be done, so that the fetch won't serve results from old cache
   return self.clients.claim(); // it ensures that whether service workers are installed or activated correctly or not.
 });
+// self.addEventListener('fetch', function (event) {
+//   if (!(event.request.url.indexOf('http') === 0)) return;
+//   event.respondWith(
+//     caches.match(event.request).then(function (response) {
+//       if (response) {
+//         return response;
+//       } else {
+//         return fetch(event.request).then(function (res) {
+//           return caches.open(CACHE_DYNAMIC_NAME).then(function (cache) {
+//             cache.put(event.request.url, res.clone());
+//             return res;
+//           })
+//         })
+//         .catch(function(err) {
+//           return caches.open(CACHE_STATIC_NAME)
+//             .then(function(cache) {
+//               return cache.match('/offline.html')
+//             })
+//         })
+//       }
+//     })
+//   );
+// });
+
+// Strategy: Cache Only
 self.addEventListener('fetch', function (event) {
   if (!(event.request.url.indexOf('http') === 0)) return;
   event.respondWith(
-    caches.match(event.request).then(function (response) {
-      if (response) {
-        return response;
-      } else {
-        return fetch(event.request).then(function (res) {
-          return caches.open(CACHE_DYNAMIC_NAME).then(function (cache) {
-            cache.put(event.request.url, res.clone());
-            return res;
-          })
-        })
-        .catch(function(err) {
-          return caches.open(CACHE_STATIC_NAME)
-            .then(function(cache) {
-              return cache.match('/offline.html')
-            })
-        })
-      }
-    })
+    caches.match(event.request)
   );
 });
