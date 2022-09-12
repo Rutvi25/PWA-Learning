@@ -67,9 +67,15 @@ self.addEventListener('activate', function (event) {
 // });
 
 // Strategy: Cache Only
+// self.addEventListener('fetch', function (event) {
+//   event.respondWith(
+//     caches.match(event.request)
+//   );
+// });
+
+// Strategy: Network Only
 self.addEventListener('fetch', function (event) {
-  if (!(event.request.url.indexOf('http') === 0)) return;
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
   );
 });
