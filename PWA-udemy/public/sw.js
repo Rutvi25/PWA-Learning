@@ -1,5 +1,5 @@
 var CACHE_STATIC_NAME = 'static-v9';
-var CACHE_DYNAMIC_NAME = 'dynamic-v2'
+var CACHE_DYNAMIC_NAME = 'dynamic-v2';
 
 self.addEventListener('install', function (event) {
   console.log('[Service worker] installing service worker...', event);
@@ -66,6 +66,29 @@ self.addEventListener('activate', function (event) {
 //   );
 // });
 
+// Strategy: Network with cache fallback
+self.addEventListener('fetch', function (event) {
+  if (!(event.request.url.indexOf('http') === 0)) return;
+  event.respondWith(
+    fetch(event.request)
+      .then(function (res) {
+        return fetch(event.request).then(function (res) {
+          return caches.open(CACHE_DYNAMIC_NAME).then(function (cache) {
+            cache.put(event.request.url, res.clone());
+            return res;
+          });
+        });
+      })
+      .catch(function (err) {
+        return caches.match(event.request).then(function (response) {
+          if (response) {
+            return response;
+          }
+        });
+      })
+  );
+});
+
 // Strategy: Cache Only
 // self.addEventListener('fetch', function (event) {
 //   event.respondWith(
@@ -74,8 +97,8 @@ self.addEventListener('activate', function (event) {
 // });
 
 // Strategy: Network Only
-self.addEventListener('fetch', function (event) {
-  event.respondWith(
-    fetch(event.request)
-  );
-});
+// self.addEventListener('fetch', function (event) {
+//   event.respondWith(
+//     fetch(event.request)
+//   );
+// });
