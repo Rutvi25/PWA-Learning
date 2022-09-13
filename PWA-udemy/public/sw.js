@@ -45,17 +45,40 @@ self.addEventListener('activate', function (event) {
 
 // Strategy: Cache then Network
 self.addEventListener('fetch', function (event) {
-  if (!(event.request.url.indexOf('http') === 0)) return;
-  event.respondWith(
-    caches.open(CACHE_DYNAMIC_NAME)
-      .then(function (cache) {
-        return fetch(event.request)
-          .then(function(res) {
-            cache.put(event.request, res.clone())
-            return res
-          })
+  var url = 'https://httpbin.org/get';
+  if (event.request.url.indexOf(url) > -1) {
+    event.respondWith(
+      caches.open(CACHE_DYNAMIC_NAME).then(function (cache) {
+        return fetch(event.request).then(function (res) {
+          cache.put(event.request, res.clone());
+          return res;
+        });
       })
-  );
+    );
+  } else {
+    event.respondWith(
+      caches.match(event.request).then(function (response) {
+        if (response) {
+          return response;
+        } else {
+          return fetch(event.request)
+            .then(function (res) {
+              return caches.open(CACHE_DYNAMIC_NAME).then(function (cache) {
+                cache.put(event.request.url, res.clone());
+                return res;
+              });
+            })
+            .catch(function (err) {
+              return caches.open(CACHE_STATIC_NAME).then(function (cache) {
+                if (event.request.url.indexOf('/help')) {
+                  return cache.match('/offline.html');
+                }
+              });
+            });
+        }
+      })
+    );
+  }
 });
 
 // self.addEventListener('fetch', function (event) {
