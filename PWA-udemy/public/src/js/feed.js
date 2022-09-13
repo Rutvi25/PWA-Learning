@@ -44,8 +44,8 @@ function onSaveButtonClicked(event) {
 }
 
 function clearCards() {
-  while (sharedMomentsArea.hasChildNodes) {
-    sharedMomentsArea.removeChild(sharedMomentsArea.lastChild());
+  while (sharedMomentsArea.hasChildNodes()) {
+    sharedMomentsArea.removeChild(sharedMomentsArea.lastChild);
   }
 }
 
