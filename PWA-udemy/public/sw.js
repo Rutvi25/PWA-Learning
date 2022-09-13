@@ -1,5 +1,21 @@
 var CACHE_STATIC_NAME = 'static-v14';
 var CACHE_DYNAMIC_NAME = 'dynamic-v2';
+var STATIC_FILES = [
+  '/',
+  '/index.html',
+  '/offline.html',
+  '/src/js/app.js',
+  '/src/js/feed.js',
+  '/src/js/promise.js',
+  '/src/js/fetch.js',
+  '/src/js/material.min.js',
+  '/src/css/app.css',
+  '/src/css/feed.css',
+  '/src/images/main-image.jpg',
+  'https://fonts.googleapis.com/css?family=Roboto:400,700',
+  'https://fonts.googleapis.com/icon?family=Material+Icons',
+  'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css',
+];
 
 self.addEventListener('install', function (event) {
   console.log('[Service worker] installing service worker...', event);
@@ -7,22 +23,7 @@ self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(CACHE_STATIC_NAME).then(function (cache) {
       console.log('[Service Worker] Precaching app shell...');
-      cache.addAll([
-        '/',
-        '/index.html',
-        '/offline.html',
-        '/src/js/app.js',
-        '/src/js/feed.js',
-        '/src/js/promise.js',
-        '/src/js/fetch.js',
-        '/src/js/material.min.js',
-        '/src/css/app.css',
-        '/src/css/feed.css',
-        '/src/images/main-image.jpg',
-        'https://fonts.googleapis.com/css?family=Roboto:400,700',
-        'https://fonts.googleapis.com/icon?family=Material+Icons',
-        'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css',
-      ]);
+      cache.addAll(STATIC_FILES);
     })
   );
 });
@@ -43,6 +44,14 @@ self.addEventListener('activate', function (event) {
   return self.clients.claim(); // it ensures that whether service workers are installed or activated correctly or not.
 });
 
+function isInArray(string, array) {
+  for (var i = 0; i < array.length; i++) {
+    if (array[i] === string) {
+      return true;
+    }
+  }
+  return false;
+}
 // Strategy: Cache then Network
 self.addEventListener('fetch', function (event) {
   var url = 'https://httpbin.org/get';
@@ -55,6 +64,8 @@ self.addEventListener('fetch', function (event) {
         });
       })
     );
+  } else if (isInArray(event.request.url, STATIC_FILES)) {
+    event.respondWith(caches.match(event.request));
   } else {
     event.respondWith(
       caches.match(event.request).then(function (response) {
