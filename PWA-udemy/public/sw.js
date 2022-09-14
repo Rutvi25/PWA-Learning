@@ -17,6 +17,17 @@ var STATIC_FILES = [
   'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css',
 ];
 
+// cleaning or trimming the dynamic cache
+function trimCache(cacheName, maxItems) {
+  caches.open(cacheName).then(function (cache) {
+    return cache.keys().then(function (keys) {
+      if (keys.length > maxItems) {
+        cache.delete(keys[0]).then(trimCache(cacheName, maxItems));
+      }
+    });
+  });
+}
+
 self.addEventListener('install', function (event) {
   console.log('[Service worker] installing service worker...', event);
   // as soon as the service worker installation finishes, we've fetch listener
@@ -76,6 +87,7 @@ self.addEventListener('fetch', function (event) {
           return fetch(event.request)
             .then(function (res) {
               return caches.open(CACHE_DYNAMIC_NAME).then(function (cache) {
+                trimCache(CACHE_DYNAMIC_NAME, 3);
                 cache.put(event.request.url, res.clone());
                 return res;
               });
