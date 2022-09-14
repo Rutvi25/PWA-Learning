@@ -56,6 +56,7 @@ function isInArray(string, array) {
 self.addEventListener('fetch', function (event) {
   var url = 'https://httpbin.org/get';
   if (event.request.url.indexOf(url) > -1) {
+    if (!(event.request.url.indexOf('http') === 0)) return;
     event.respondWith(
       caches.open(CACHE_DYNAMIC_NAME).then(function (cache) {
         return fetch(event.request).then(function (res) {
@@ -81,7 +82,7 @@ self.addEventListener('fetch', function (event) {
             })
             .catch(function (err) {
               return caches.open(CACHE_STATIC_NAME).then(function (cache) {
-                if (event.request.url.indexOf('/help')) {
+                if (event.request.headers.get('accept').includes('text/html')) {
                   return cache.match('/offline.html');
                 }
               });
