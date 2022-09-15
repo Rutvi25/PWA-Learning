@@ -1,4 +1,6 @@
-var CACHE_STATIC_NAME = 'static-v14';
+importScripts('/src/js/idb.js');
+
+var CACHE_STATIC_NAME = 'static-v16';
 var CACHE_DYNAMIC_NAME = 'dynamic-v2';
 var STATIC_FILES = [
   '/',
@@ -6,6 +8,7 @@ var STATIC_FILES = [
   '/offline.html',
   '/src/js/app.js',
   '/src/js/feed.js',
+  '/src/js/idb.js',
   '/src/js/promise.js',
   '/src/js/fetch.js',
   '/src/js/material.min.js',
@@ -16,6 +19,12 @@ var STATIC_FILES = [
   'https://fonts.googleapis.com/icon?family=Material+Icons',
   'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css',
 ];
+
+var dbPromise = idb.open('posts-store', 1, function(db) {
+  if(!db.objectStoreNames.contains('posts')) {
+    db.createObjectStore('posts', { keyPath: 'id' });
+  }
+});
 
 // cleaning or trimming the dynamic cache
 // function trimCache(cacheName, maxItems) {
@@ -65,17 +74,27 @@ function isInArray(string, array) {
 }
 // Strategy: Cache then Network
 self.addEventListener('fetch', function (event) {
-  var url = 'https://httpbin.org/get';
+  var url = 'https://pwagram-d7a1c-default-rtdb.firebaseio.com/posts';
   if (event.request.url.indexOf(url) > -1) {
     if (!(event.request.url.indexOf('http') === 0)) return;
-    event.respondWith(
-      caches.open(CACHE_DYNAMIC_NAME).then(function (cache) {
-        return fetch(event.request).then(function (res) {
-          cache.put(event.request, res.clone());
-          return res;
+    event.respondWith(fetch(event.request)
+    .then(function (res) {
+      var clonedRes = res.clone();
+      clonedRes.json()
+        .then(function(data) {
+          for (var key in data) {
+            dbPromise
+              .then(function(db) {
+                var tx = db.transaction('posts', 'readwrite');
+                var store = tx.objectStore('posts');
+                store.put(data[key]);
+                return tx.complete;
+              });
+          }
         });
-      })
-    );
+      return res;
+    })
+  );
   } else if (isInArray(event.request.url, STATIC_FILES)) {
     event.respondWith(caches.match(event.request));
   } else {
@@ -86,11 +105,7 @@ self.addEventListener('fetch', function (event) {
         } else {
           return fetch(event.request)
             .then(function (res) {
-              return caches.open(CACHE_DYNAMIC_NAME).then(function (cache) {
-                // trimCache(CACHE_DYNAMIC_NAME, 3);
-                cache.put(event.request.url, res.clone());
                 return res;
-              });
             })
             .catch(function (err) {
               return caches.open(CACHE_STATIC_NAME).then(function (cache) {

@@ -33,7 +33,6 @@ function closeCreatePostModal() {
 }
 
 shareImageButton.addEventListener('click', openCreatePostModal);
-
 closeCreatePostModalButton.addEventListener('click', closeCreatePostModal);
 
 // currently not in use, otherwise it allows to save assets in cache on demand
@@ -81,7 +80,7 @@ function createCard(data) {
 }
 
 function updateUI(data) {
-  clearCards()
+  clearCards();
   for (var i = 0; i < data.length; i++) {
     createCard(data[i]);
   }
@@ -97,24 +96,28 @@ fetch(url)
   .then(function (data) {
     networkDataReceived = true;
     console.log('From web', data);
-    var dataArray = []
+    var dataArray = [];
     for (var key in data) {
-      dataArray.push(data[key])
+      dataArray.push(data[key]);
     }
     updateUI(dataArray);
   });
 if ('caches' in window) {
   caches
     .match(url)
-    .then(function (res) {
-      if (res) {
-        return res.json();
+    .then(function (response) {
+      if (response) {
+        return response.json();
       }
     })
     .then(function (data) {
       console.log('From cache', data);
       if (!networkDataReceived) {
-        updateUI(dataArray)
+        var dataArray = [];
+        for (var key in data) {
+          dataArray.push(data[key]);
+        }
+        updateUI(dataArray);
       }
     });
 }
