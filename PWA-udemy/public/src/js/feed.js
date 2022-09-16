@@ -19,13 +19,13 @@ function openCreatePostModal() {
     });
     deferredPrompt = null;
   }
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function (registrations) {
-      for (var i = 0; i < registrations.length; i++) {
-        registrations[i].unregister();
-      }
-    });
-  }
+  // if ('serviceWorker' in navigator) {
+  //   navigator.serviceWorker.getRegistrations().then(function (registrations) {
+  //     for (var i = 0; i < registrations.length; i++) {
+  //       registrations[i].unregister();
+  //     }
+  //   });
+  // }
 }
 
 function closeCreatePostModal() {
@@ -90,10 +90,10 @@ var url = 'https://pwagram-d7a1c-default-rtdb.firebaseio.com/posts.json';
 var networkDataReceived = false;
 
 fetch(url)
-  .then(function (res) {
+  .then(function(res) {
     return res.json();
   })
-  .then(function (data) {
+  .then(function(data) {
     networkDataReceived = true;
     console.log('From web', data);
     var dataArray = [];
@@ -102,22 +102,13 @@ fetch(url)
     }
     updateUI(dataArray);
   });
-if ('caches' in window) {
-  caches
-    .match(url)
-    .then(function (response) {
-      if (response) {
-        return response.json();
-      }
-    })
-    .then(function (data) {
-      console.log('From cache', data);
+
+if ('indexedDB' in window) {
+  readAllData('posts')
+    .then(function(data) {
       if (!networkDataReceived) {
-        var dataArray = [];
-        for (var key in data) {
-          dataArray.push(data[key]);
-        }
-        updateUI(dataArray);
+        console.log('From cache', data);
+        updateUI(data);
       }
     });
 }
