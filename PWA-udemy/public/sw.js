@@ -82,7 +82,7 @@ self.addEventListener('fetch', function (event) {
       fetch(event.request).then(function (res) {
         var clonedRes = res.clone();
         clearAllData('posts')
-          .then(function () { 
+          .then(function () {
             return clonedRes.json();
           })
           .then(function (data) {
