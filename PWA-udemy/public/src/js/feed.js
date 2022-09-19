@@ -38,7 +38,6 @@ function closeCreatePostModal() {
   createPostArea.style.transform = 'translate(100vh)';
   // createPostArea.style.display = 'none';
 }
-
 shareImageButton.addEventListener('click', openCreatePostModal);
 closeCreatePostModalButton.addEventListener('click', closeCreatePostModal);
 
@@ -124,19 +123,19 @@ function sendData() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    }
+      Accept: 'application/json',
+    },
     body: JSON.stringify({
       id: new Date().toISOString(),
       title: titleInput.value,
-      location: locationInput.value
-      image: 'https://firebasestorage.googleapis.com/v0/b/pwagram-d7a1c.appspot.com/o/sf-boat.jpg?alt=media&token=21452f3d-3895-45d2-9241-ea2bb7d327c8'
-    })
-  })
-  .then(function(res) {
+      location: locationInput.value,
+      image:
+        'https://firebasestorage.googleapis.com/v0/b/pwagram-d7a1c.appspot.com/o/sf-boat.jpg?alt=media&token=21452f3d-3895-45d2-9241-ea2bb7d327c8',
+    }),
+  }).then(function (res) {
     console.log('Sent data', res);
     updateUI();
-  })
+  });
 }
 
 form.addEventListener('submit', function (event) {
@@ -146,7 +145,7 @@ form.addEventListener('submit', function (event) {
     return;
   }
   closeCreatePostModal();
-  if ('serviceWorker' in navigator && 'syncManager' in window) {
+  if ('serviceWorker' in navigator && 'SyncManager' in window) {
     navigator.serviceWorker.ready.then(function (sw) {
       var post = {
         id: new Date().toISOString(),
@@ -155,14 +154,12 @@ form.addEventListener('submit', function (event) {
       };
       writeData('sync-posts', post)
         .then(function () {
-          return sw.sync.register('sync-new-post');
+          return sw.sync.register('sync-new-posts');
         })
         .then(function () {
-          var snackbackContainer = document.querySelector(
-            '#confirmation-toast'
-          );
+          var snackbarContainer = document.querySelector('#confirmation-toast');
           var data = { message: 'Your post was saved for syncing!' };
-          snackbackContainer.MaterialSnackback.showSnackbar(data);
+          snackbarContainer.MaterialSnackbar.showSnackbar(data);
         })
         .catch(function (err) {
           console.log(err);
