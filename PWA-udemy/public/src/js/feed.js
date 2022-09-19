@@ -6,7 +6,10 @@ var closeCreatePostModalButton = document.querySelector(
 var sharedMomentsArea = document.querySelector('#shared-moments');
 
 function openCreatePostModal() {
-  createPostArea.style.display = 'block';
+  // createPostArea.style.display = 'block';
+  // setTimeout(function(){
+    createPostArea.style.transform = 'translateY(0)';
+  // }, 1)
   if (deferredPrompt) {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(function (choiceResult) {
@@ -29,7 +32,8 @@ function openCreatePostModal() {
 }
 
 function closeCreatePostModal() {
-  createPostArea.style.display = 'none';
+  createPostArea.style.transform = 'translate(100vh)';
+  // createPostArea.style.display = 'none';
 }
 
 shareImageButton.addEventListener('click', openCreatePostModal);
@@ -90,10 +94,10 @@ var url = 'https://pwagram-d7a1c-default-rtdb.firebaseio.com/posts.json';
 var networkDataReceived = false;
 
 fetch(url)
-  .then(function(res) {
+  .then(function (res) {
     return res.json();
   })
-  .then(function(data) {
+  .then(function (data) {
     networkDataReceived = true;
     console.log('From web', data);
     var dataArray = [];
@@ -104,11 +108,10 @@ fetch(url)
   });
 
 if ('indexedDB' in window) {
-  readAllData('posts')
-    .then(function(data) {
-      if (!networkDataReceived) {
-        console.log('From cache', data);
-        updateUI(data);
-      }
-    });
+  readAllData('posts').then(function (data) {
+    if (!networkDataReceived) {
+      console.log('From cache', data);
+      updateUI(data);
+    }
+  });
 }
