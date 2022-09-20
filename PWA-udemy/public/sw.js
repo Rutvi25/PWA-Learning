@@ -209,6 +209,11 @@ self.addEventListener('sync', function (event) {
             if(res.ok) {
               deleteItemFromData('sync-posts', dt.id);
             }
+            // if (res.ok) {
+            //   res.json().then(function (resData) {
+            //     deleteItemFromData('sync-posts', resData.id);
+            //   });
+            // }
           })
           .catch(function(err) {
             console.log('Error while sending data', err);

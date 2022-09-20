@@ -119,6 +119,7 @@ if ('indexedDB' in window) {
 }
 
 function sendData() {
+  // the fetch url will be changed accordingly if the cloud functions are deployed.
   fetch('https://pwagram-d7a1c-default-rtdb.firebaseio.com/posts.json', {
     method: 'POST',
     headers: {
