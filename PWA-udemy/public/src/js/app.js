@@ -31,7 +31,7 @@ function displayConfirmNotification() {
       dir: 'ltr', //indicates direction, left to right
       lang: 'en-US',
       vibrate: [100, 50, 200],
-      badge: '/src/images/ions/app-icon-96x96.png',
+      badge: '/src/images/icons/app-icon-96x96.png',
       tag: 'confirm-notification', // tag acts like an id for perticular notification.
       // In case of multiple notifications, the latest notification with same tag will replace the previous one with same tag.
       renotify: true, // if renotify is true, even if the same tag is used, new notification will vibrate again, and alert the user.
@@ -39,12 +39,12 @@ function displayConfirmNotification() {
         {
           action: 'confirm',
           title: 'Okay',
-          icon: '/src/images/ions/app-icon-96x96.png',
+          icon: '/src/images/icons/app-icon-96x96.png',
         },
         {
           action: 'cancel',
           title: 'Cancel',
-          icon: '/src/images/ions/app-icon-96x96.png',
+          icon: '/src/images/icons/app-icon-96x96.png',
         },
       ],
     };
