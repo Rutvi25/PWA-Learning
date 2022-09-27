@@ -41,13 +41,18 @@ exports.storePostData = functions.https.onRequest(function (request, response) {
               p256dh: sub.val().keys.p256dh,
             },
           };
-          webpush.sendNotification(
-            pushConfig,
-            JSON.stringify({ title: 'New Post', content: 'New post added!' })
-          )
-          .catch(function (err) {
-            console.log(err)
-          })
+          webpush
+            .sendNotification(
+              pushConfig,
+              JSON.stringify({
+                title: 'New Post',
+                content: 'New post added!',
+                openURL: '/help'
+              })
+            )
+            .catch(function (err) {
+              console.log(err);
+            });
         });
         response
           .status(201)
