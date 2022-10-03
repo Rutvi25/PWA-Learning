@@ -12,6 +12,7 @@ var canvasElement = document.querySelector('#canvas');
 var captureButton = document.querySelector('#capture-btn');
 var imagePicker = document.querySelector('#image-picker');
 var imagePickerArea = document.querySelector('#pick-image');
+var picture;
 
 function initializeMedia() {
   if (!('mediaDevices' in navigator)) {
@@ -54,6 +55,7 @@ captureButton.addEventListener('click', function (event) {
   videoPlayer.srcObject.getVideoTracks().forEach(function (track) {
     track.stop();
   });
+  picture = dataURItoBlob(canvasElement.toDataUrl());
 });
 
 function openCreatePostModal() {
@@ -171,20 +173,16 @@ if ('indexedDB' in window) {
 }
 
 function sendData() {
+  var id = new Date().toISOString();
+  var postData = new FormData();
+  postData.append('id', id);
+  postData.append('title', titleInput.value);
+  postData.append('location', locationInput.value);
+  postData.append('file', picture, id + '.png');
   // the fetch url will be changed accordingly if the cloud functions are deployed.
   fetch('https://pwagram-d7a1c-default-rtdb.firebaseio.com/posts.json', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify({
-      id: new Date().toISOString(),
-      title: titleInput.value,
-      location: locationInput.value,
-      image:
-        'https://firebasestorage.googleapis.com/v0/b/pwagram-d7a1c.appspot.com/o/sf-boat.jpg?alt=media&token=21452f3d-3895-45d2-9241-ea2bb7d327c8',
-    }),
+    body: postData,
   }).then(function (res) {
     console.log('Sent data', res);
     updateUI();

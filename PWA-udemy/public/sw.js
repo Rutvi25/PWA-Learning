@@ -191,21 +191,16 @@ self.addEventListener('sync', function (event) {
     event.waitUntil(
       readAllData('sync-posts').then(function (data) {
         for (var dt of data) {
+          var postData = new FormData();
+          postData.append('id', dt.id);
+          postData.append('title', dt.title);
+          postData.append('location', dt.location);
+          postData.append('file', dt.picture, dt.id + '.png');
           fetch(
             'https://pwagram-d7a1c-default-rtdb.firebaseio.com/posts.json',
             {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-              },
-              body: JSON.stringify({
-                id: dt.id,
-                title: dt.title,
-                location: dt.location,
-                image:
-                  'https://firebasestorage.googleapis.com/v0/b/pwagram-d7a1c.appspot.com/o/sf-boat.jpg?alt=media&token=21452f3d-3895-45d2-9241-ea2bb7d327c8',
-              }),
+              body: postData,
             }
           )
             .then(function (res) {
@@ -256,7 +251,11 @@ self.addEventListener('notificationclose', function (event) {
 });
 self.addEventListener('push', function (event) {
   console.log('push notification received!', event);
-  var data = { title: 'New!', content: 'Something new happened!', openUrl: '/' };
+  var data = {
+    title: 'New!',
+    content: 'Something new happened!',
+    openUrl: '/',
+  };
   if (event.data) {
     data = JSON.parse(event.data.text());
   }
@@ -265,8 +264,8 @@ self.addEventListener('push', function (event) {
     icon: '/src/images/icons/app-icon-96x96.png',
     badge: '/src/images/icons/app-icon-96x96.png',
     data: {
-      url: data.openUrl
-    }
+      url: data.openUrl,
+    },
   };
   event.waitUntil(self.registration.showNotification(data.title, options));
 });
