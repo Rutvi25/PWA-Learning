@@ -1,7 +1,7 @@
 importScripts('/src/js/idb.js');
 importScripts('/src/js/utility.js');
 
-var CACHE_STATIC_NAME = 'static-v30';
+var CACHE_STATIC_NAME = 'static-v33';
 var CACHE_DYNAMIC_NAME = 'dynamic-v2';
 var STATIC_FILES = [
   '/',
@@ -74,7 +74,7 @@ function isInArray(string, array) {
 }
 
 self.addEventListener('fetch', function (event) {
-  var url = 'https://pwagram-99adf.firebaseio.com/posts';
+  var url = 'https://pwagram-d7a1c-default-rtdb.firebaseio.com/posts';
   if (event.request.url.indexOf(url) > -1) {
     event.respondWith(
       fetch(event.request).then(function (res) {
@@ -187,10 +187,11 @@ self.addEventListener('sync', function (event) {
           postData.append('id', dt.id);
           postData.append('title', dt.title);
           postData.append('location', dt.location);
+          postData.append('rawLocationLat', dt.rawLocation.lat);
+          postData.append('rawLocationLng', dt.rawLocation.lng);
           postData.append('file', dt.picture, dt.id + '.png');
-
           fetch(
-            'https://us-central1-pwagram-99adf.cloudfunctions.net/storePostData',
+            'https://us-central-pwagram-d7a1c.cloudfunctions.net/storePostData',
             {
               method: 'POST',
               body: postData,

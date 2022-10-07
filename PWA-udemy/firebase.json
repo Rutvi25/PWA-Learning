@@ -5,7 +5,8 @@
       ".git",
       "firebase-debug.log",
       "firebase-debug.*.log"
-    ]
+    ],
+    "source": "functions"
   },
   "hosting": {
     "public": "public",
@@ -14,5 +15,8 @@
       "**/.*",
       "**/node_modules/**"
     ]
+  },
+  "database": {
+    "rules": "database.rules.json"
   }
 }

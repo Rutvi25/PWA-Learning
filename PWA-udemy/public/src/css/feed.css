@@ -19,7 +19,8 @@
   display: none;
   margin: auto;
 }
-#create-post #pick-image {
+#create-post #pick-image,
+#create-post #location-loader {
   display: none;
 }
 #create-post #capture-btn {
