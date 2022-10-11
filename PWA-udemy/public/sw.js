@@ -1,7 +1,7 @@
 importScripts('/src/js/idb.js');
 importScripts('/src/js/utility.js');
 
-var CACHE_STATIC_NAME = 'static-v33';
+var CACHE_STATIC_NAME = 'static-v30';
 var CACHE_DYNAMIC_NAME = 'dynamic-v2';
 var STATIC_FILES = [
   '/',
@@ -20,62 +20,61 @@ var STATIC_FILES = [
   'https://fonts.googleapis.com/icon?family=Material+Icons',
   'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css',
 ];
-
+var dbPromise = idb.open('posts-store', 1, function (db) {
+  if (!db.objectStoreNames.contains('posts')) {
+    db.createObjectStore('posts', { keyPath: 'id' });
+  }
+});
+// cleaning or trimming the dynamic cache
 // function trimCache(cacheName, maxItems) {
-//   caches.open(cacheName)
-//     .then(function (cache) {
-//       return cache.keys()
-//         .then(function (keys) {
-//           if (keys.length > maxItems) {
-//             cache.delete(keys[0])
-//               .then(trimCache(cacheName, maxItems));
-//           }
-//         });
-//     })
+//   caches.open(cacheName).then(function (cache) {
+//     return cache.keys().then(function (keys) {
+//       if (keys.length > maxItems) {
+//         cache.delete(keys[0]).then(trimCache(cacheName, maxItems));
+//       }
+//     });
+//   });
 // }
-
 self.addEventListener('install', function (event) {
-  console.log('[Service Worker] Installing Service Worker ...', event);
+  console.log('[Service worker] installing service worker...', event);
+  // as soon as the service worker installation finishes, we've fetch listener
   event.waitUntil(
     caches.open(CACHE_STATIC_NAME).then(function (cache) {
-      console.log('[Service Worker] Precaching App Shell');
+      console.log('[Service Worker] Precaching app shell...');
       cache.addAll(STATIC_FILES);
     })
   );
 });
-
 self.addEventListener('activate', function (event) {
-  console.log('[Service Worker] Activating Service Worker ....', event);
+  console.log('[Service worker] activating service worker...', event);
   event.waitUntil(
     caches.keys().then(function (keyList) {
       return Promise.all(
         keyList.map(function (key) {
           if (key !== CACHE_STATIC_NAME && key !== CACHE_DYNAMIC_NAME) {
-            console.log('[Service Worker] Removing old cache.', key);
+            console.log('[Service worker] removing old cache...', key);
             return caches.delete(key);
           }
         })
       );
     })
-  );
-  return self.clients.claim();
+  ); // it'll wait until the clean up will be done, so that the fetch won't serve results from old cache
+  return self.clients.claim(); // it ensures that whether service workers are installed or activated correctly or not.
 });
 
 function isInArray(string, array) {
-  var cachePath;
-  if (string.indexOf(self.origin) === 0) {
-    // request targets domain where we serve the page from (i.e. NOT a CDN)
-    console.log('matched ', string);
-    cachePath = string.substring(self.origin.length); // take the part of the URL AFTER the domain (e.g. after localhost:8080)
-  } else {
-    cachePath = string; // store the full request (for CDNs)
+  for (var i = 0; i < array.length; i++) {
+    if (array[i] === string) {
+      return true;
+    }
   }
-  return array.indexOf(cachePath) > -1;
+  return false;
 }
-
+// Strategy: Cache then Network
 self.addEventListener('fetch', function (event) {
   var url = 'https://pwagram-d7a1c-default-rtdb.firebaseio.com/posts';
   if (event.request.url.indexOf(url) > -1) {
+    // if (!(event.request.url.indexOf('http') === 0)) return;
     event.respondWith(
       fetch(event.request).then(function (res) {
         var clonedRes = res.clone();
@@ -94,6 +93,7 @@ self.addEventListener('fetch', function (event) {
   } else if (isInArray(event.request.url, STATIC_FILES)) {
     event.respondWith(caches.match(event.request));
   } else {
+    // if (!(event.request.url.indexOf('http') === 0)) return;
     event.respondWith(
       caches.match(event.request).then(function (response) {
         if (response) {
@@ -119,67 +119,67 @@ self.addEventListener('fetch', function (event) {
     );
   }
 });
-
-// self.addEventListener('fetch', function(event) {
+// self.addEventListener('fetch', function (event) {
+//   if (!(event.request.url.indexOf('http') === 0)) return;
 //   event.respondWith(
-//     caches.match(event.request)
-//       .then(function(response) {
-//         if (response) {
-//           return response;
-//         } else {
-//           return fetch(event.request)
-//             .then(function(res) {
-//               return caches.open(CACHE_DYNAMIC_NAME)
-//                 .then(function(cache) {
-//                   cache.put(event.request.url, res.clone());
-//                   return res;
-//                 })
+//     caches.match(event.request).then(function (response) {
+//       if (response) {
+//         return response;
+//       } else {
+//         return fetch(event.request).then(function (res) {
+//           return caches.open(CACHE_DYNAMIC_NAME).then(function (cache) {
+//             cache.put(event.request.url, res.clone());
+//             return res;
+//           })
+//         })
+//         .catch(function(err) {
+//           return caches.open(CACHE_STATIC_NAME)
+//             .then(function(cache) {
+//               return cache.match('/offline.html')
 //             })
-//             .catch(function(err) {
-//               return caches.open(CACHE_STATIC_NAME)
-//                 .then(function(cache) {
-//                   return cache.match('/offline.html');
-//                 });
-//             });
-//         }
-//       })
+//         })
+//       }
+//     })
 //   );
 // });
-
-// self.addEventListener('fetch', function(event) {
+// Strategy: Network with cache fallback
+// self.addEventListener('fetch', function (event) {
+//   if (!(event.request.url.indexOf('http') === 0)) return;
 //   event.respondWith(
 //     fetch(event.request)
-//       .then(function(res) {
-//         return caches.open(CACHE_DYNAMIC_NAME)
-//                 .then(function(cache) {
-//                   cache.put(event.request.url, res.clone());
-//                   return res;
-//                 })
+//       .then(function (res) {
+//         return fetch(event.request).then(function (res) {
+//           return caches.open(CACHE_DYNAMIC_NAME).then(function (cache) {
+//             cache.put(event.request.url, res.clone());
+//             return res;
+//           });
+//         });
 //       })
-//       .catch(function(err) {
-//         return caches.match(event.request);
+//       .catch(function (err) {
+//         return caches.match(event.request).then(function (response) {
+//           if (response) {
+//             return response;
+//           }
+//         });
 //       })
 //   );
 // });
-
-// Cache-only
+// Strategy: Cache Only
 // self.addEventListener('fetch', function (event) {
 //   event.respondWith(
 //     caches.match(event.request)
 //   );
 // });
-
-// Network-only
+// Strategy: Network Only
 // self.addEventListener('fetch', function (event) {
 //   event.respondWith(
 //     fetch(event.request)
 //   );
 // });
-
 self.addEventListener('sync', function (event) {
-  console.log('[Service Worker] Background syncing', event);
+  console.log('[Service Worker] background syncing', event);
   if (event.tag === 'sync-new-posts') {
-    console.log('[Service Worker] Syncing new Posts');
+    console.log('[Service Worker] syncing new posts');
     event.waitUntil(
       readAllData('sync-posts').then(function (data) {
         for (var dt of data) {
@@ -187,23 +187,35 @@ self.addEventListener('sync', function (event) {
           postData.append('id', dt.id);
           postData.append('title', dt.title);
           postData.append('location', dt.location);
-          postData.append('rawLocationLat', dt.rawLocation.lat);
-          postData.append('rawLocationLng', dt.rawLocation.lng);
-          postData.append('file', dt.picture, dt.id + '.png');
+          postData.append('file', dt.picture);
+          console.log('>>>>>> post!!!!!!!', postData);
           fetch(
-            'https://us-central-pwagram-d7a1c.cloudfunctions.net/storePostData',
+            'https://pwagram-d7a1c-default-rtdb.firebaseio.com/posts.json',
             {
               method: 'POST',
-              body: postData,
+              headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+              },
+              body: JSON.stringify({
+                id: dt.id,
+                title: dt.title,
+                location: dt.location,
+                image:
+                  'https://firebasestorage.googleapis.com/v0/b/pwagram-d7a1c.appspot.com/o/sf-boat.jpg?alt=media&token=0c2a4fcb-2174-41ba-986b-bdc828f57da7',
+              }),
             }
           )
             .then(function (res) {
               console.log('Sent data', res);
               if (res.ok) {
-                res.json().then(function (resData) {
-                  deleteItemFromData('sync-posts', resData.id);
-                });
+                deleteItemFromData('sync-posts', dt.id);
               }
+              // if (res.ok) {
+              //   res.json().then(function (resData) {
+              //     deleteItemFromData('sync-posts', resData.id);
+              //   });
+              // }
             })
             .catch(function (err) {
               console.log('Error while sending data', err);
@@ -213,53 +225,47 @@ self.addEventListener('sync', function (event) {
     );
   }
 });
-
+// Reacting to notifications
 self.addEventListener('notificationclick', function (event) {
   var notification = event.notification;
   var action = event.action;
-
   console.log(notification);
-
   if (action === 'confirm') {
-    console.log('Confirm was chosen');
+    console.log('Confirm was chosen!');
     notification.close();
   } else {
     console.log(action);
     event.waitUntil(
-      clients.matchAll().then(function (clis) {
-        var client = clis.find(function (c) {
+      clients.matchAll().then(function (client) {
+        var client = client.find(function (c) {
           return c.visibilityState === 'visible';
         });
-
         if (client !== undefined) {
-          client.navigate(notification.data.url);
+          client.navigate('http://localhost:8080');
           client.focus();
         } else {
-          clients.openWindow(notification.data.url);
+          clients.openWindow('http:/localhost:80880');
         }
         notification.close();
       })
     );
+    notification.close();
   }
 });
-
+// closing the notification
 self.addEventListener('notificationclose', function (event) {
-  console.log('Notification was closed', event);
+  console.log('push notification received', event);
 });
-
 self.addEventListener('push', function (event) {
-  console.log('Push Notification received', event);
-
+  var notification = event.notification;
   var data = {
     title: 'New!',
     content: 'Something new happened!',
     openUrl: '/',
   };
-
   if (event.data) {
     data = JSON.parse(event.data.text());
   }
-
   var options = {
     body: data.content,
     icon: '/src/images/icons/app-icon-96x96.png',
@@ -268,6 +274,5 @@ self.addEventListener('push', function (event) {
       url: data.openUrl,
     },
   };
-
   event.waitUntil(self.registration.showNotification(data.title, options));
 });

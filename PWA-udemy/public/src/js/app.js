@@ -49,7 +49,7 @@ function displayConfirmNotification() {
       ],
     };
     navigator.serviceWorker.ready.then(function (swreg) {
-      swreg.showNotification('Successfully subscribed!', options);
+      swreg.showNotification('Successfully subscribed!(from SW)', options);
     });
   }
 }
@@ -67,7 +67,7 @@ function configurePushSub() {
       if (sub === null) {
         // create a new subscription
         var vapidPublicKey =
-          'BJgnF5WstHD_rV68pmWWzgCWv8VAaqq66bnHWp_cy4jbu4Umi21ViSDC2GV67eiYpWkY3J9BdIwXHK92oa5Nz7E';
+          'BEe5nc-1shUdjnNbezh2H3hq1uTZozU2HeP9FTuvjU7RV0rCX7pgzdB4xfuicBHHVt5AIQDQ73NBqCTA3LWeKrw';
         var convertedVapidPublicKey = urlBase64ToUint8Array(vapidPublicKey);
         return reg.pushManager.subscribe({
           userVisibleOnly: true,
@@ -77,15 +77,18 @@ function configurePushSub() {
       }
     })
     .then(function (newSub) {
-      console.log(newSub)
-      return fetch('https://pwagram-d7a1c-default-rtdb.firebaseio.com/subscriptions.json', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(newSub)
-      })
+      console.log(newSub);
+      return fetch(
+        'https://pwagram-d7a1c-default-rtdb.firebaseio.com/subscriptions.json',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify(newSub),
+        }
+      );
     })
     .then(function (res) {
       if (res.ok) {

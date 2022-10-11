@@ -1,13 +1,16 @@
 {
-  "functions": {
-    "ignore": [
-      "node_modules",
-      ".git",
-      "firebase-debug.log",
-      "firebase-debug.*.log"
-    ],
-    "source": "functions"
-  },
+  "functions": [
+    {
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log"
+      ],
+      "source": "functions",
+      "codebase": "default"
+    }
+  ],
   "hosting": {
     "public": "public",
     "ignore": [
