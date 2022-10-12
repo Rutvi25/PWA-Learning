@@ -1,7 +1,7 @@
 importScripts('/src/js/idb.js');
 importScripts('/src/js/utility.js');
 
-var CACHE_STATIC_NAME = 'static-v30';
+var CACHE_STATIC_NAME = 'static-v31';
 var CACHE_DYNAMIC_NAME = 'dynamic-v2';
 var STATIC_FILES = [
   '/',
@@ -183,12 +183,12 @@ self.addEventListener('sync', function (event) {
     event.waitUntil(
       readAllData('sync-posts').then(function (data) {
         for (var dt of data) {
-          var postData = new FormData();
-          postData.append('id', dt.id);
-          postData.append('title', dt.title);
-          postData.append('location', dt.location);
-          postData.append('file', dt.picture);
-          console.log('>>>>>> post!!!!!!!', postData);
+          // var postData = new FormData();
+          // postData.append('id', dt.id);
+          // postData.append('title', dt.title);
+          // postData.append('location', dt.location);
+          // postData.append('picture', dt.picture);
+          // console.log('>>>>>> post!!!!!!!', postData);
           fetch(
             'https://pwagram-d7a1c-default-rtdb.firebaseio.com/posts.json',
             {
@@ -197,12 +197,13 @@ self.addEventListener('sync', function (event) {
                 'Content-Type': 'application/json',
                 Accept: 'application/json',
               },
+              // body: postData
               body: JSON.stringify({
                 id: dt.id,
                 title: dt.title,
                 location: dt.location,
-                image:
-                  'https://firebasestorage.googleapis.com/v0/b/pwagram-d7a1c.appspot.com/o/sf-boat.jpg?alt=media&token=0c2a4fcb-2174-41ba-986b-bdc828f57da7',
+                image: dt.image
+                  // 'https://firebasestorage.googleapis.com/v0/b/pwagram-d7a1c.appspot.com/o/sf-boat.jpg?alt=media&token=0c2a4fcb-2174-41ba-986b-bdc828f57da7',
               }),
             }
           )

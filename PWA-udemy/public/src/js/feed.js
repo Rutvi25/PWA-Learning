@@ -55,8 +55,8 @@ captureButton.addEventListener('click', function (event) {
   videoPlayer.srcObject.getVideoTracks().forEach(function (track) {
     track.stop();
   });
-  console.log('>>> picture url', canvasElement.toDataURL())
-  picture = dataURItoBlob(canvasElement.toDataURL())
+  console.log('>>> picture url', canvasElement.toDataURL());
+  picture = (canvasElement.toDataURL());
 });
 function openCreatePostModal() {
   // createPostArea.style.display = 'block';
@@ -173,6 +173,13 @@ if ('indexedDB' in window) {
 }
 
 function sendData() {
+  var id = new Date().toISOString();
+  // var postData = new FormData();
+  // postData.append('id', id);
+  // postData.append('title', titleInput.value);
+  // postData.append('location', locationInput.value);
+  // postData.append('file', picture, id + '.png');
+  // console.log('>>>>>> post from feed file!!!!!!!', postData);
   // the fetch url will be changed accordingly if the cloud functions are deployed.
   fetch('https://pwagram-d7a1c-default-rtdb.firebaseio.com/posts.json', {
     method: 'POST',
@@ -180,12 +187,13 @@ function sendData() {
       'Content-Type': 'application/json',
       Accept: 'application/json',
     },
+    // body: postData,
     body: JSON.stringify({
       id: new Date().toISOString(),
       title: titleInput.value,
       location: locationInput.value,
-      image:
-        'https://firebasestorage.googleapis.com/v0/b/pwagram-d7a1c.appspot.com/o/sf-boat.jpg?alt=media&token=21452f3d-3895-45d2-9241-ea2bb7d327c7',
+      image: picture
+        // 'https://firebasestorage.googleapis.com/v0/b/pwagram-d7a1c.appspot.com/o/sf-boat.jpg?alt=media&token=21452f3d-3895-45d2-9241-ea2bb7d327c7',
     }),
   }).then(function (res) {
     console.log('Sent data', res);
@@ -206,6 +214,7 @@ form.addEventListener('submit', function (event) {
         id: new Date().toISOString(),
         title: titleInput.value,
         location: locationInput.value,
+        image: picture
       };
       writeData('sync-posts', post)
         .then(function () {
