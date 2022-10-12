@@ -1,10 +1,18 @@
 var functions = require('firebase-functions');
 var admin = require('firebase-admin');
 var cors = require('cors')({origin: true})
+var formidable = require('formidable');
+
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
 //
 var serviceAccount = require("./pwagram-fbKey.json");
+
+var gcconfig = {
+  projectId: 'pwagram-d7a1c',
+  keyFilename: 'pwagram-fbkey.json'
+}
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
   databaseURL: 'https://pwagram-d7a1c-default-rtdb.firebaseio.com/'

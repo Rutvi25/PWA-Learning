@@ -12,6 +12,7 @@ var canvasElement = document.querySelector('#canvas');
 var captureButton = document.querySelector('#capture-btn');
 var imagePicker = document.querySelector('#image-picker');
 var imagePickerArea = document.querySelector('#pick-image');
+var uploadImageButton = document.querySelector('#upload-image');
 var picture;
 
 function initializeMedia() {
@@ -40,6 +41,28 @@ function initializeMedia() {
       imagePickerArea.style.display = 'block';
     });
 }
+uploadImageButton.addEventListener('click', function () {
+  var firebaseConfig = {
+    projectId: 'pwagram-d7a1c',
+    storageBucket: 'gs://pwagram-d7a1c.appspot.com',
+  };
+  firebase.initializeApp(firebaseConfig);
+  const ref = firebase.storage().ref();
+  const file = imagePicker.files[0];
+  const name = +new Date() + '-' + file.name;
+  const metadata = {
+    contentType: file.type,
+  };
+  const task = ref.child(name).put(file, metadata);
+  task
+    .then((snapshot) => snapshot.ref.getDownloadURL())
+    .then((url) => {
+      console.log(url);
+      alert('image uploaded!');
+      picture = url;
+      console.log('>>>> uploaded:', picture);
+    });
+});
 captureButton.addEventListener('click', function (event) {
   canvasElement.style.display = 'block';
   videoPlayer.style.display = 'none';
@@ -56,7 +79,7 @@ captureButton.addEventListener('click', function (event) {
     track.stop();
   });
   console.log('>>> picture url', canvasElement.toDataURL());
-  picture = (canvasElement.toDataURL());
+  picture = canvasElement.toDataURL();
 });
 function openCreatePostModal() {
   // createPostArea.style.display = 'block';
@@ -84,7 +107,6 @@ function openCreatePostModal() {
   //   });
   // }
 }
-
 function closeCreatePostModal() {
   createPostArea.style.transform = 'translate(100vh)';
   imagePickerArea.style.display = 'none';
@@ -171,15 +193,8 @@ if ('indexedDB' in window) {
     }
   });
 }
-
 function sendData() {
   var id = new Date().toISOString();
-  // var postData = new FormData();
-  // postData.append('id', id);
-  // postData.append('title', titleInput.value);
-  // postData.append('location', locationInput.value);
-  // postData.append('file', picture, id + '.png');
-  // console.log('>>>>>> post from feed file!!!!!!!', postData);
   // the fetch url will be changed accordingly if the cloud functions are deployed.
   fetch('https://pwagram-d7a1c-default-rtdb.firebaseio.com/posts.json', {
     method: 'POST',
@@ -187,13 +202,11 @@ function sendData() {
       'Content-Type': 'application/json',
       Accept: 'application/json',
     },
-    // body: postData,
     body: JSON.stringify({
       id: new Date().toISOString(),
       title: titleInput.value,
       location: locationInput.value,
-      image: picture
-        // 'https://firebasestorage.googleapis.com/v0/b/pwagram-d7a1c.appspot.com/o/sf-boat.jpg?alt=media&token=21452f3d-3895-45d2-9241-ea2bb7d327c7',
+      image: picture,
     }),
   }).then(function (res) {
     console.log('Sent data', res);
@@ -203,8 +216,12 @@ function sendData() {
 
 form.addEventListener('submit', function (event) {
   event.preventDefault();
-  if (titleInput.value.trim() === '' || locationInput.value.trim === '') {
-    alert('please enter valid data!');
+  if (
+    titleInput.value.trim() === '' ||
+    locationInput.value.trim() === '' ||
+    !picture
+  ) {
+    alert('please make sure that image is uploaded with title and location!');
     return;
   }
   closeCreatePostModal();
@@ -214,7 +231,7 @@ form.addEventListener('submit', function (event) {
         id: new Date().toISOString(),
         title: titleInput.value,
         location: locationInput.value,
-        image: picture
+        image: picture,
       };
       writeData('sync-posts', post)
         .then(function () {
