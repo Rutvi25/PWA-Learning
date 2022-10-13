@@ -14,6 +14,36 @@ var imagePicker = document.querySelector('#image-picker');
 var imagePickerArea = document.querySelector('#pick-image');
 var uploadImageButton = document.querySelector('#upload-image');
 var picture;
+var locationBtn = document.querySelector('#location-btn');
+var locationLoader = document.querySelector('#location-loader');
+var fetchedLocation;
+
+locationBtn.addEventListener('click', function (event) {});
+function initializeLocation() {
+  if (!('geolocation' in navigator)) {
+    return;
+  }
+  locationBtn.style.display = 'none';
+  locationLoader.style.display = 'block';
+  navigator.geolocation.getCurrentPosition(
+    function (position) {
+      locationBtn.style.display = 'inline';
+      locationLoader.style.display = 'none';
+      fetchedLocation = { lat: position.coords.latitude, lng: position.coords.longitude};
+      console.log('>>>>> fetched location',fetchedLocation)
+      locationInput.value = 'In India';
+      document.querySelector('#manual-location').classList.add('is-focused');
+    },
+    function (error) {
+      console.log(error);
+      locationBtn.style.display = 'inline';
+      locationLoader.style.display = 'none';
+      alert("Couldn't fetch location, please enter manually!");
+      fetchedLocation = { lat: null, lng: null };
+    },
+    { timeout: 7000 }
+  );
+}
 
 function initializeMedia() {
   if (!('mediaDevices' in navigator)) {
@@ -86,6 +116,7 @@ function openCreatePostModal() {
   // setTimeout(function(){
   createPostArea.style.transform = 'translateY(0)';
   initializeMedia();
+  initializeLocation();
   // }, 1)
   if (deferredPrompt) {
     deferredPrompt.prompt();
@@ -112,6 +143,8 @@ function closeCreatePostModal() {
   imagePickerArea.style.display = 'none';
   videoPlayer.style.display = 'none';
   canvasElement.style.display = 'none';
+  locationBtn.style.display = 'inline';
+  locationLoader.style.display = 'none';
   // createPostArea.style.display = 'none';
 }
 shareImageButton.addEventListener('click', openCreatePostModal);
@@ -207,6 +240,7 @@ function sendData() {
       title: titleInput.value,
       location: locationInput.value,
       image: picture,
+      rawLocation: fetchedLocation
     }),
   }).then(function (res) {
     console.log('Sent data', res);
@@ -231,6 +265,7 @@ form.addEventListener('submit', function (event) {
         id: new Date().toISOString(),
         title: titleInput.value,
         location: locationInput.value,
+        rawLocation: fetchedLocation,
         image: picture,
       };
       writeData('sync-posts', post)

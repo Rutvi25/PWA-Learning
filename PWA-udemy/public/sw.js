@@ -196,6 +196,7 @@ self.addEventListener('sync', function (event) {
                 id: dt.id,
                 title: dt.title,
                 location: dt.location,
+                rawLocation: dt.rawLocation,
                 image: dt.image,
               }),
             }
