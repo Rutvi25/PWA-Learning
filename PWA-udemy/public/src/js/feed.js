@@ -16,21 +16,25 @@ var uploadImageButton = document.querySelector('#upload-image');
 var picture;
 var locationBtn = document.querySelector('#location-btn');
 var locationLoader = document.querySelector('#location-loader');
-var fetchedLocation;
+var fetchedLocation = { lat: 0, lng: 0 };
 
 locationBtn.addEventListener('click', function (event) {});
 function initializeLocation() {
   if (!('geolocation' in navigator)) {
     return;
   }
+  var sawAlert = false;
   locationBtn.style.display = 'none';
   locationLoader.style.display = 'block';
   navigator.geolocation.getCurrentPosition(
     function (position) {
       locationBtn.style.display = 'inline';
       locationLoader.style.display = 'none';
-      fetchedLocation = { lat: position.coords.latitude, lng: position.coords.longitude};
-      console.log('>>>>> fetched location',fetchedLocation)
+      fetchedLocation = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+      };
+      console.log('>>> fetched location', fetchedLocation);
       locationInput.value = 'In India';
       document.querySelector('#manual-location').classList.add('is-focused');
     },
@@ -38,8 +42,11 @@ function initializeLocation() {
       console.log(error);
       locationBtn.style.display = 'inline';
       locationLoader.style.display = 'none';
-      alert("Couldn't fetch location, please enter manually!");
-      fetchedLocation = { lat: null, lng: null };
+      if (!sawAlert) {
+        alert("Couldn't fetch location, please enter manually!");
+        sawAlert = true;
+      }
+      fetchedLocation = { lat: 0, lng: 0 };
     },
     { timeout: 7000 }
   );
@@ -113,11 +120,11 @@ captureButton.addEventListener('click', function (event) {
 });
 function openCreatePostModal() {
   // createPostArea.style.display = 'block';
-  // setTimeout(function(){
-  createPostArea.style.transform = 'translateY(0)';
+  setTimeout(function () {
+    createPostArea.style.transform = 'translateY(0)';
+  }, 1);
   initializeMedia();
   initializeLocation();
-  // }, 1)
   if (deferredPrompt) {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(function (choiceResult) {
@@ -139,12 +146,21 @@ function openCreatePostModal() {
   // }
 }
 function closeCreatePostModal() {
-  createPostArea.style.transform = 'translate(100vh)';
   imagePickerArea.style.display = 'none';
   videoPlayer.style.display = 'none';
   canvasElement.style.display = 'none';
   locationBtn.style.display = 'inline';
   locationLoader.style.display = 'none';
+  captureButton.style.display = 'inline';
+  // stopping the recording
+  if (videoPlayer.srcObject) {
+    videoPlayer.srcObject.getVideoTracks().forEach(function (track) {
+      track.stop();
+    });
+  }
+  setTimeout(function () {
+    createPostArea.style.transform = 'translate(100vh)';
+  }, 1);
   // createPostArea.style.display = 'none';
 }
 shareImageButton.addEventListener('click', openCreatePostModal);
@@ -240,7 +256,7 @@ function sendData() {
       title: titleInput.value,
       location: locationInput.value,
       image: picture,
-      rawLocation: fetchedLocation
+      rawLocation: fetchedLocation,
     }),
   }).then(function (res) {
     console.log('Sent data', res);
