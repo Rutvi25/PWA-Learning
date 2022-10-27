@@ -15,7 +15,16 @@ this.addEventListener('install', (event) => {
 });
 
 this.addEventListener('fetch', (event) => {
+  console.warn('>>>url', event.request.url);
   if (!navigator.onLine) {
+    if (event.request.url === 'http://localhost:3000/manifest.json') {
+    event.waitUntill(
+      this.registration.showNotification('notification', {
+        body: 'Internet not working!',
+        icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQyRcKIq3ZLxA9Zg6mrPJbmzdvZksYWe4sHpQ&usqp=CAU.png',
+      })
+    );
+  }
     event.respondWith(
       caches.match(event.request).then((result) => {
         if (result) {
