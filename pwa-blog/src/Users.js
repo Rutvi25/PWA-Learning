@@ -1,30 +1,30 @@
-import React, { useState, useEffect } from "react";
-import { Table } from "react-bootstrap";
+import React, { useState, useEffect } from 'react';
+import { Table } from 'react-bootstrap';
 
 function Users() {
   const [data, setData] = useState([]);
-  const [mode, setMode] = useState("online");
+  const [mode, setMode] = useState('online');
   useEffect(() => {
-    let url = "https://jsonplaceholder.typicode.com/users";
+    let url = 'https://jsonplaceholder.typicode.com/users';
     fetch(url)
       .then((response) => {
         response.json().then((result) => {
-          console.log("result", result);
+          console.log('result', result);
           setData(result);
-          localStorage.setItem("users", JSON.stringify(result));
+          localStorage.setItem('users', JSON.stringify(result));
         });
       })
       .catch((err) => {
-        let collection = localStorage.getItem("users");
+        let collection = localStorage.getItem('users');
         setData(JSON.parse(collection));
-        setMode("offline");
+        setMode('offline');
       });
   }, []);
   return (
     <div>
       <div>
-        {mode === "offline" ? (
-          <div className="alert alert-warning" role={"alert"}>
+        {mode === 'offline' ? (
+          <div className='alert alert-warning' role={'alert'}>
             you are in offline mode or have some issue with connection
           </div>
         ) : null}
